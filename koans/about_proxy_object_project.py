@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 
 # Project: Create a Proxy Class
 #
@@ -21,11 +22,34 @@ from runner.koan import *
 class Proxy:
     def __init__(self, target_object):
         # WRITE CODE HERE
-
+        self.message_log = []
+        self.message_stats = defaultdict(int)
         #initialize '_obj' attribute last. Trust me on this!
         self._obj = target_object
 
+    def __getattr__(self, attr_name):
+        self.message_log.append(attr_name)
+        self.message_stats[attr_name] += 1
+        return self._obj.__getattribute__(attr_name)
+
+    def __setattr__(self, attr_name, value):
+        if attr_name in ['_obj', "messages", "was_called", "number_of_times_called", "message_log", "message_stats"]:
+            object.__setattr__(self, attr_name, value)
+        else:
+            self.message_log.append(attr_name)
+            self.message_stats[attr_name] += 1
+            self._obj.__setattr__(attr_name, value)
     # WRITE CODE HERE
+
+    def messages(self):
+        return self.message_log
+
+    def was_called(self, msg):
+        return msg in self.message_stats.keys()
+
+    def number_of_times_called(self, msg):
+        return self.message_stats[msg]
+
 
 # The proxy object should pass the following Koan:
 #
